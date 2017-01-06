@@ -7,6 +7,7 @@ You can use it for example after "upgrading" a torrent to a newer version. If th
 Or, you can use this tool to check (and optionally delete) those unneeded files
 
 The syntax is:
+
     torrentcleanup d:\foo\mytorrent.torrent d:\downloads\mydata
 
 this will check d:\downloads\mydata for any files that are not in the mytorrent.torrent. If you add a `-d` anywhere on the command line, those extra files will be deleted.
@@ -20,13 +21,15 @@ You can optionally specify more than one torrent file on the command line. This 
 Simple example:
 
 Torrent A contains the directories `foo_a/` and `bar_a/`, while torrent B contains `foo_b/` and `bar_b/`. Your destination directory contains all four subdirectories:
-    |
-    +- foo_a
-    +- foo_b
-    +- bar_a
-    +- bar_b
+
+    - D:\MyDownloads
+      +- foo_a
+      +- foo_b
+      +- bar_a
+      +- bar_b
 
 Then you *must* call TorrentCleanup with both torrents, A and B, otherwise it would mark (and possibly delete) all files that are in the other torrent:
+
     torrentcleanup a.torrent b.torrent d:\mydownloads
 
 
