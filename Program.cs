@@ -215,11 +215,25 @@ namespace TorrentCleanup
                     totalFiles++;
                     totalSize += (ulong)s.Size;
 
+                    FindFileWithSameName(s.Path.ToLower(), torrentFiles);
+
                     if (del)
                         File.Delete(s.Path);
                 }
             }
             Console.WriteLine("Total: {0:0} MB and {1} of {2} files NOT in any torrent", totalSize / (1024.0 * 1024.0), totalFiles, localFiles.Count);
+        }
+
+        private static void FindFileWithSameName(string v, HashSet<string> torrentFiles)
+        {
+            string fileName = v.Substring(v.LastIndexOf('\\') + 1);
+            foreach (string t in torrentFiles)
+            {
+                if (t.EndsWith(fileName))
+                {
+                    Console.WriteLine("  Possible match: {0}", t);
+                }
+            }
         }
     }
 }
