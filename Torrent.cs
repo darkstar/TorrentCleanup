@@ -151,15 +151,15 @@ namespace TorrentCleanup
                 throw new TException("Expected ':' after string length");
             
             length = Convert.ToInt32(len);
-            sb = new StringBuilder(length);
+            byte[] buf = new byte[length];
             for (int i = 0; i < length; i++)
             {
                 ch = sr.Read();
                 if (ch == -1)
                     throw new TException("unexpected end of stream");
-                sb.Append((char)ch);
+                buf[i] = (byte)(ch & 0xff);
             }
-            m_stringValue = sb.ToString();
+            m_stringValue = Encoding.UTF8.GetString(buf);
         }
 
         public override string ToString()
