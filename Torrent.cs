@@ -134,7 +134,6 @@ namespace TorrentCleanup
             string len = "";
             int length;
             int ch;
-            StringBuilder sb;
 
             while (true)
             {
