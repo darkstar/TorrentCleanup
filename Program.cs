@@ -49,7 +49,9 @@ namespace TorrentCleanup
 
             foreach (string f in Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories))
             {
-                results.Add(new TorrentFileInfo(f, new FileInfo(f).Length));
+                FileInfo fi = new FileInfo(f);
+                results.Add(new TorrentFileInfo(f, fi.Length));
+
                 if (DateTime.Now - starttime > TimeSpan.FromMilliseconds(250))
                 {
                     starttime = DateTime.Now;
@@ -101,6 +103,7 @@ namespace TorrentCleanup
             List<TorrentFileInfo> localFiles;
             HashSet<string> torrentFiles = new HashSet<string>();
             List<string> torrents = new List<string>();
+            Dictionary<long, List<string>> torrentFileSizes = new Dictionary<long, List<string>>();
             //Testing.DoTests();
 
             if (args.Length < 2)
@@ -191,9 +194,18 @@ namespace TorrentCleanup
                             if (o is TDictionary)
                             {
                                 string localPath = MakePath((o as TDictionary)["path"] as TList);
+                                long length = ((o as TDictionary)["length"] as TInteger).Value;
                                 string globalPath = basePath + encoding.GetString(Encoding.Default.GetBytes(localPath)); ;
 
                                 torrentFiles.Add(globalPath.ToLower());
+
+                                // Add file size to the dictionary
+                                if (!torrentFileSizes.ContainsKey(length))
+                                {
+                                    torrentFileSizes[length] = new List<string>();
+                                }
+                                torrentFileSizes[length].Add(globalPath.ToLower());
+
                             }
                         }
                         Console.WriteLine("{0} files", torrentFiles.Count);
@@ -215,6 +227,7 @@ namespace TorrentCleanup
                     totalFiles++;
                     totalSize += (ulong)s.Size;
 
+                    FindFileWithSameSize(s, torrentFileSizes);
                     FindFileWithSameName(s, torrentFiles);
 
                     if (del)
@@ -224,6 +237,24 @@ namespace TorrentCleanup
             Console.WriteLine("Total: {0:0} MB and {1} of {2} files NOT in any torrent", totalSize / (1024.0 * 1024.0), totalFiles, localFiles.Count);
         }
 
+        private static void FindFileWithSameSize(TorrentFileInfo v, Dictionary<long, List<string>> torrentFileSizes)
+        {
+            if (torrentFileSizes.ContainsKey(v.Size))
+            {
+                List<string> candidates = torrentFileSizes[v.Size];
+                if (candidates.Count > 5)
+                {
+                    Console.WriteLine("  Too many possible size matches, ignoring...");
+                }
+                else
+                {
+                    foreach (string s in candidates)
+                    {
+                        Console.WriteLine("  Possible size match: {0}", s);
+                    }
+                }
+            }
+        }
         private static void FindFileWithSameName(TorrentFileInfo v, HashSet<string> torrentFiles)
         {
             string fileName = v.Path.Substring(v.Path.LastIndexOf('\\') + 1);
@@ -231,7 +262,7 @@ namespace TorrentCleanup
             {
                 if (t.EndsWith(fileName))
                 {
-                    Console.WriteLine("  Possible match: {0}", t);
+                    Console.WriteLine("  Possible name match: {0}", t);
                 }
             }
         }
