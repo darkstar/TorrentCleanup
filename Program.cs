@@ -101,7 +101,7 @@ namespace TorrentCleanup
             string basePath = null;
             bool del = false;
             List<TorrentFileInfo> localFiles;
-            HashSet<string> torrentFiles = new HashSet<string>();
+            HashSet<string> torrentFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             List<string> torrents = new List<string>();
             Dictionary<long, List<string>> torrentFileSizes = new Dictionary<long, List<string>>();
             //Testing.DoTests();
@@ -170,7 +170,7 @@ namespace TorrentCleanup
                     TDictionary foo = new TDictionary();
                     TDictionary info;
                     TList files;
-                    System.Text.Encoding encoding = System.Text.Encoding.Default;
+                    System.Text.Encoding encoding = System.Text.Encoding.UTF8;
 
                     foo.ParseFromStream(sr);
                     if (foo.ContainsKey("comment"))
@@ -195,16 +195,16 @@ namespace TorrentCleanup
                             {
                                 string localPath = MakePath((o as TDictionary)["path"] as TList);
                                 long length = ((o as TDictionary)["length"] as TInteger).Value;
-                                string globalPath = basePath + encoding.GetString(Encoding.Default.GetBytes(localPath)); ;
+                                string globalPath = basePath + encoding.GetString(Encoding.Default.GetBytes(localPath));
 
-                                torrentFiles.Add(globalPath.ToLower());
+                                torrentFiles.Add(globalPath);
 
                                 // Add file size to the dictionary
                                 if (!torrentFileSizes.ContainsKey(length))
                                 {
                                     torrentFileSizes[length] = new List<string>();
                                 }
-                                torrentFileSizes[length].Add(globalPath.ToLower());
+                                torrentFileSizes[length].Add(globalPath);
 
                             }
                         }
@@ -221,7 +221,7 @@ namespace TorrentCleanup
 
             foreach (TorrentFileInfo s in localFiles)
             {
-                if (!torrentFiles.Contains(s.Path.ToLower()))
+                if (!torrentFiles.Contains(s.Path))
                 {
                     Console.WriteLine("Local file {0} not in torrent", s);
                     totalFiles++;
